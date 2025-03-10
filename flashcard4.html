@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Dev Flashcards</title>
+  <style>
+    :root {
+      --primary: #205781;
+      --secondary: #4F959D;
+      --accent: #98D2C0;
+      --light: #F6F8D5;
+      --dark: #184868;
+      --card-width: 300px;
+      --card-height: 420px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--light), var(--accent));
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: var(--primary);
+    }
+
+    .header h1 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      display: inline-block;
+    }
+
+    .header h1::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--secondary), var(--primary));
+      border-radius: 2px;
+    }
+
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 40px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: var(--light);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+      font-weight: bold;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:hover {
+      background-color: var(--secondary);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: rotate(45deg);
+      transition: all 0.3s ease;
+      opacity: 0;
+    }
+
+    button:hover::after {
+      opacity: 1;
+      animation: shine 1.5s ease-out;
+    }
+
+    @keyframes shine {
+      0% {
+        transform: translateX(-300%) rotate(45deg);
+      }
+
+      100% {
+        transform: translateX(100%) rotate(45deg);
+      }
+    }
+
+    .filter-select {
+      padding: 12px 16px;
+      border-radius: 30px;
+      border: 2px solid var(--secondary);
+      background-color: var(--light);
+      font-size: 1rem;
+      color: var(--primary);
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .filter-select:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-container {
+      perspective: 1000px;
+      width: var(--card-width);
+      height: var(--card-height);
+      position: relative;
+      margin: 0 auto;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      border-radius: 16px;
+      box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card.opening {
+      animation: openCard 1.8s forwards;
+    }
+
+    @keyframes openCard {
+      0% {
+        transform: scale(0.1) translateY(100px) rotate(-10deg);
+        opacity: 0;
+        box-shadow: 0 0 80px rgba(152, 210, 192, 0.9);
+      }
+
+      30% {
+        transform: scale(0.5) translateY(50px) rotate(5deg);
+        opacity: 0.5;
+      }
+
+      60% {
+        transform: scale(1.1) translateY(-30px) rotate(-2deg);
+        opacity: 1;
+        box-shadow: 0 0 100px rgba(152, 210, 192, 1);
+      }
+
+      75% {
+        transform: scale(1.05) translateY(-15px) rotate(1deg);
+      }
+
+      90% {
+        transform: scale(1.02) translateY(-5px) rotate(-0.5deg);
+      }
+
+      100% {
+        transform: scale(1) translateY(0) rotate(0);
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-front {
+      background: linear-gradient(145deg, var(--primary), var(--secondary));
+      color: var(--light);
+      border: 4px solid var(--light);
+    }
+
+    .card-back {
+      background: var(--light);
+      color: var(--primary);
+      transform: rotateY(180deg);
+      border: 4px solid var(--primary);
+    }
+
+    .card-header {
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 3px;
+    }
+
+    .card-back .card-header {
+      background-color: var(--secondary);
+      color: var(--light);
+    }
+
+    .card-back .card-header::after {
+      background: var(--light);
+    }
+
+    .card-content {
+      padding: 25px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: 1.25rem;
+      position: relative;
+    }
+
+    .card-content p {
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .card-back .card-content {
+      overflow-y: auto;
+      justify-content: flex-start;
+      padding: 15px 20px;
+    }
+
+    .code-example {
+      margin-top: 15px;
+      background-color: #1e293b;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      width: 100%;
+      text-align: left;
+      overflow-x: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      border-left: 4px solid var(--accent);
+      line-height: 1.5;
+      min-height: var(--card-height);
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background-color: var(--accent);
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transform: rotate(5deg);
+    }
+
+    .card-footer {
+      padding: 10px;
+      text-align: center;
+      font-size: 0.9rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      margin-top: auto;
+      font-weight: bold;
+    }
+
+    .card-back .card-footer {
+      background-color: rgba(32, 87, 129, 0.1);
+    }
+
+    .shine {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 16px;
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.4) 0%,
+          rgba(255, 255, 255, 0) 60%);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .sparkles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover .sparkles {
+      opacity: 1;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #fff;
+      box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+      animation: twinkle 2s infinite;
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: 0.2;
+        transform: scale(0.8);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    .progress {
+      margin-top: 10px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.6);
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+      transform: rotate(30deg);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%) rotate(30deg);
+      }
+
+      100% {
+        transform: translateX(100%) rotate(30deg);
+      }
+    }
+
+    .progress-text {
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-weight: bold;
+      position: relative;
+      z-index: 2;
+    }
+
+    .progress-bar {
+      height: 12px;
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      width: 0%;
+      transition: width 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg,
+          rgba(255, 255, 255, 0.1),
+          rgba(255, 255, 255, 0.3),
+          rgba(255, 255, 255, 0.1));
+      animation: wave 2s infinite linear;
+    }
+
+    @keyframes wave {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    @media (max-width: 400px) {
+      :root {
+        --card-width: 280px;
+        --card-height: 400px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    /* Syntax highlighting for code */
+    .code-keyword {
+      color: #ff79c6;
+    }
+
+    .code-function {
+      color: #8be9fd;
+    }
+
+    .code-string {
+      color: #f1fa8c;
+    }
+
+    .code-number {
+      color: #bd93f9;
+    }
+
+    .code-comment {
+      color: #6272a4;
+      font-style: italic;
+    }
+
+    .code-tag {
+      color: #ff79c6;
+    }
+
+    .code-attr {
+      color: #50fa7b;
+    }
+
+    .code-value {
+      color: #f1fa8c;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>Web Dev Flashcards</h1>
+    <p>Master web development concepts with interactive flashcards</p>
+  </div>
+
+  <div class="controls">
+    <button id="new-card-btn">Draw New Card ✨</button>
+    <select class="filter-select" id="category-filter">
+      <option value="all">All Categories</option>
+      <option value="html">HTML</option>
+      <option value="css">CSS</option>
+      <option value="javascript">JavaScript</option>
+      <option value="reactjs">ReactJS</option>
+      <option value="nextjs">NextJS</option>
+    </select>
+  </div>
+
+  <div class="card-container">
+    <div class="card">
+      <div class="card-face card-front">
+        <div class="card-header">Web Development Question</div>
+        <div class="card-content">
+          <p>Click "Draw New Card" to start learning!</p>
+        </div>
+        <div class="card-badge">Web Dev</div>
+        <div class="card-footer">Tap to flip</div>
+        <div class="shine"></div>
+        <div class="sparkles"></div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-header">Answer</div>
+        <div class="card-content">
+          <p>The answer will appear here along with code examples.</p>
+        </div>
+        <div class="card-footer">Tap to flip back</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress">
+    <div class="progress-text">Progress: 0/0</div>
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+  </div>
+
+  <script>
+    // Flashcard data
+    const flashcards = [
+      {
+        question: "What is the CSS Box Model?",
+        answer: "The CSS Box Model is a fundamental concept that describes how elements are rendered on a webpage. It consists of content, padding, border, and margin areas.",
+        codeExample: `<span class="code-comment">/* CSS Box Model Example */</span>
+<span class="code-tag">.box</span> {
+  <span class="code-attr">width</span>: <span class="code-value">200px</span>;           <span class="code-comment">/* Content width */</span>
+  <span class="code-attr">height</span>: <span class="code-value">100px</span>;          <span class="code-comment">/* Content height */</span>
+  <span class="code-attr">padding</span>: <span class="code-value">20px</span>;          <span class="code-comment">/* Space inside the border */</span>
+  <span class="code-attr">border</span>: <span class="code-value">5px solid #333</span>; <span class="code-comment">/* Border around padding */</span>
+  <span class="code-attr">margin</span>: <span class="code-value">15px</span>;           <span class="code-comment">/* Space outside the border */</span>
+}`,
+        category: "css"
+      },
+      {
+        question: "How do you center an element horizontally and vertically with Flexbox?",
+        answer: "Use the display: flex property on the parent container along with justify-content and align-items properties set to center.",
+        codeExample: `<span class="code-comment">/* Centering with Flexbox */</span>
+<span class="code-tag">.container</span> {
+  <span class="code-attr">display</span>: <span class="code-value">flex</span>;
+  <span class="code-attr">justify-content</span>: <span class="code-value">center</span>; <span class="code-comment">/* Horizontal centering */</span>
+  <span class="code-attr">align-items</span>: <span class="code-value">center</span>;     <span class="code-comment">/* Vertical centering */</span>
+  <span class="code-attr">height</span>: <span class="code-value">100vh</span>;           <span class="code-comment">/* Full viewport height */</span>
+}`,
+        category: "css"
+      },
+      {
+        question: "What is the difference between let, const, and var in JavaScript?",
+        answer: "var is function-scoped and hoisted, let is block-scoped and not hoisted, and const is block-scoped, not hoisted, and cannot be reassigned after declaration.",
+        codeExample: `<span class="code-comment">// var: function-scoped, can be redeclared</span>
+<span class="code-keyword">var</span> x = <span class="code-number">10</span>;
+<span class="code-keyword">var</span> x = <span class="code-number">20</span>; <span class="code-comment">// Valid</span>
+
+<span class="code-comment">// let: block-scoped, cannot be redeclared</span>
+<span class="code-keyword">let</span> y = <span class="code-number">10</span>;
+<span class="code-comment">// let y = 20; // Error: y already declared</span>
+
+<span class="code-comment">// const: block-scoped, must be initialized, cannot be reassigned</span>
+<span class="code-keyword">const</span> z = <span class="code-number">30</span>;
+<span class="code-comment">// z = 40; // Error: assignment to constant variable</span>`,
+        category: "javascript"
+      },
+      {
+        question: "What are JavaScript Promises and how do they work?",
+        answer: "Promises are objects representing the eventual completion or failure of an asynchronous operation. They can be in one of three states: pending, fulfilled, or rejected.",
+        codeExample: `<span class="code-comment">// Creating and using a Promise</span>
+<span class="code-keyword">const</span> <span class="code-function">fetchData</span> = () => {
+  <span class="code-keyword">return new</span> <span class="code-function">Promise</span>((resolve, reject) => {
+    <span class="code-comment">// Simulating an API call</span>
+    <span class="code-function">setTimeout</span>(() => {
+      <span class="code-keyword">const</span> success = <span class="code-keyword">true</span>;
+      <span class="code-keyword">if</span> (success) {
+        <span class="code-function">resolve</span>(<span class="code-string">'Data fetched successfully'</span>);
+      } <span class="code-keyword">else</span> {
+        <span class="code-function">reject</span>(<span class="code-string">'Error fetching data'</span>);
+      }
+    }, <span class="code-number">2000</span>);
+  });
+};
+
+<span class="code-comment">// Using the Promise</span>
+<span class="code-function">fetchData</span>()
+  .<span class="code-function">then</span>(data => <span class="code-function">console.log</span>(data))
+  .<span class="code-function">catch</span>(error => <span class="code-function">console.error</span>(error));`,
+        category: "javascript"
+      },
+      {
+        question: "What is the purpose of the HTML <meta> tag?",
+        answer: "The <meta> tag provides metadata about the HTML document that is not displayed on the page but is used by browsers, search engines, and other web services.",
+        codeExample: `<span class="code-comment"><!-- Common meta tags --></span>
+<span class="code-tag">&lt;meta</span> <span class="code-attr">charset</span>=<span class="code-string">"UTF-8"</span><span class="code-tag">&gt;</span>
+<span class="code-tag">&lt;meta</span> <span class="code-attr">name</span>=<span class="code-string">"viewport"</span> <span class="code-attr">content</span>=<span class="code-string">"width=device-width, initial-scale=1.0"</span><span class="code-tag">&gt;</span>
+<span class="code-tag">&lt;meta</span> <span class="code-attr">name</span>=<span class="code-string">"description"</span> <span class="code-attr">content</span>=<span class="code-string">"This is my website description"</span><span class="code-tag">&gt;</span>
+<span class="code-tag">&lt;meta</span> <span class="code-attr">name</span>=<span class="code-string">"keywords"</span> <span class="code-attr">content</span>=<span class="code-string">"HTML, CSS, JavaScript"</span><span class="code-tag">&gt;</span>
+<span class="code-tag">&lt;meta</span> <span class="code-attr">name</span>=<span class="code-string">"author"</span> <span class="code-attr">content</span>=<span class="code-string">"John Doe"</span><span class="code-tag">&gt;</span>
+<span class="code-tag">&lt;meta</span> <span class="code-attr">http-equiv</span>=<span class="code-string">"X-UA-Compatible"</span> <span class="code-attr">content</span>=<span class="code-string">"IE=edge"</span><span class="code-tag">&gt;</span>`,
+        category: "html"
+      },
+      {
+        question: "What are HTML Semantic Elements?",
+        answer: "Semantic elements are HTML tags that carry meaning about the structure of the page, making it more accessible and SEO-friendly. Examples include <header>, <footer>, <article>, and <section>.",
+        codeExample: `<span class="code-comment"><!-- Non-semantic structure --></span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-string">"header"</span><span class="code-tag">&gt;</span>...<span class="code-tag">&lt;/div&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-string">"nav"</span><span class="code-tag">&gt;</span>...<span class="code-tag">&lt;/div&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-string">"main"</span><span class="code-tag">&gt;</span>...<span class="code-tag">&lt;/div&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-string">"footer"</span><span class="code-tag">&gt;</span>...<span class="code-tag">&lt;/div&gt;</span>
+
+<span class="code-comment"><!-- Semantic structure --></span>
+<span class="code-tag">&lt;header&gt;</span>...<span class="code-tag">&lt;/header&gt;</span>
+<span class="code-tag">&lt;nav&gt;</span>...<span class="code-tag">&lt;/nav&gt;</span>
+<span class="code-tag">&lt;main&gt;</span>
+  <span class="code-tag">&lt;article&gt;</span>...<span class="code-tag">&lt;/article&gt;</span>
+  <span class="code-tag">&lt;section&gt;</span>...<span class="code-tag">&lt;/section&gt;</span>
+  <span class="code-tag">&lt;aside&gt;</span>...<span class="code-tag">&lt;/aside&gt;</span>
+<span class="code-tag">&lt;/main&gt;</span>
+<span class="code-tag">&lt;footer&gt;</span>...<span class="code-tag">&lt;/footer&gt;</span>`,
+        category: "html"
+      },
+      {
+        question: "How does CSS Grid differ from Flexbox?",
+        answer: "CSS Grid is designed for two-dimensional layouts (rows and columns), while Flexbox is designed for one-dimensional layouts (either rows OR columns). Grid gives more precise control over placement of items in a grid system.",
+        codeExample: `<span class="code-comment">/* Flexbox (one-dimensional) */</span>
+<span class="code-tag">.container-flex</span> {
+  <span class="code-attr">display</span>: <span class="code-value">flex</span>;
+  <span class="code-attr">flex-direction</span>: <span class="code-value">row</span>; <span class="code-comment">/* or column */</span>
+  <span class="code-attr">justify-content</span>: <span class="code-value">space-between</span>;
+}
+
+<span class="code-comment">/* CSS Grid (two-dimensional) */</span>
+<span class="code-tag">.container-grid</span> {
+  <span class="code-attr">display</span>: <span class="code-value">grid</span>;
+  <span class="code-attr">grid-template-columns</span>: <span class="code-function">repeat</span>(<span class="code-value">3, 1fr</span>);
+  <span class="code-attr">grid-template-rows</span>: <span class="code-value">auto</span>;
+  <span class="code-attr">gap</span>: <span class="code-value">20px</span>;
+}`,
+        category: "css"
+      },
+      {
+        question: "What are JavaScript Closures?",
+        answer: "A closure is the combination of a function bundled together with references to its surrounding state (the lexical environment). In other words, a closure gives you access to an outer function's scope from an inner function.",
+        codeExample: `<span class="code-comment">// Closure example</span>
+<span class="code-keyword">function</span> <span class="code-function">createCounter</span>() {
+  <span class="code-keyword">let</span> count = <span class="code-number">0</span>;  <span class="code-comment">// Private variable</span>
+  
+  <span class="code-keyword">return</span> {
+    <span class="code-function">increment</span>: <span class="code-keyword">function</span>() {
+      count++;
+      <span class="code-keyword">return</span> count;
+    },
+    <span class="code-function">decrement</span>: <span class="code-keyword">function</span>() {
+      count--;
+      <span class="code-keyword">return</span> count;
+    },
+    <span class="code-function">getCount</span>: <span class="code-keyword">function</span>() {
+      <span class="code-keyword">return</span> count;
+    }
+  };
+}
+
+<span class="code-keyword">const</span> counter = <span class="code-function">createCounter</span>();
+<span class="code-function">console.log</span>(counter.<span class="code-function">increment</span>()); <span class="code-comment">// 1</span>
+<span class="code-function">console.log</span>(counter.<span class="code-function">increment</span>()); <span class="code-comment">// 2</span>
+<span class="code-function">console.log</span>(counter.<span class="code-function">getCount</span>());  <span class="code-comment">// 2</span>`,
+        category: "javascript"
+      },
+
+      {
+        question: "What is the Virtual DOM in React?",
+        answer: "The Virtual DOM is a lightweight copy of the actual DOM that React uses to optimize rendering performance. React updates the Virtual DOM first and then calculates the minimal changes needed to update the real DOM.",
+        codeExample: `<span class="code-comment">// Example of a React Component using Virtual DOM</span>
+    <span class="code-keyword">const</span> <span class="code-function">MyComponent</span> = () => {
+      <span class="code-keyword">const</span> [count, setCount] = <span class="code-function">React.useState</span>(0);
+      
+      <span class="code-keyword">return</span> (
+        <span class="code-tag">&lt;button</span> <span class="code-attr">onClick</span>=<span class="code-function">{() => setCount(count + 1)}</span><span class="code-tag">&gt;</span>
+          Clicked {count} times
+        <span class="code-tag">&lt;/button&gt;</span>
+      );
+    };`,
+        category: "reactjs"
+      },
+      {
+        question: "What are React Hooks?",
+        answer: "React Hooks are functions that let you use state and other React features without writing a class. Examples include useState, useEffect, and useContext.",
+        codeExample: `<span class="code-comment">// Example of useState Hook</span>
+<span class="code-keyword">import</span> <span class="code-string">React, { useState }</span> <span class="code-keyword">from</span> <span class="code-string">"react"</span>;
+
+<span class="code-keyword">const</span> <span class="code-function">Counter</span> = () => {
+  <span class="code-keyword">const</span> [count, setCount] = useState(0);
+
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;button</span> <span class="code-attr">onClick</span>=<span class="code-function">{() => setCount(count + 1)}</span><span class="code-tag">&gt;</span>
+      {count}
+    <span class="code-tag">&lt;/button&gt;</span>
+  );
+};`,
+        category: "reactjs"
+      },
+      {
+        question: "What is Next.js and why use it?",
+        answer: "Next.js is a React framework for building server-side rendered and static web applications. It provides features like file-based routing, API routes, and optimized performance.",
+        codeExample: `<span class="code-comment">// Example of a Next.js page</span>
+<span class="code-keyword">export default function</span> <span class="code-function">Home</span>() {
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;h1&gt;</span>Welcome to Next.js!<span class="code-tag">&lt;/h1&gt;</span>
+  );
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "How do you perform API calls in Next.js?",
+        answer: "Next.js provides API routes and built-in methods like getServerSideProps and getStaticProps for fetching data at different stages of rendering.",
+        codeExample: `<span class="code-comment">// Fetching data with getServerSideProps</span>
+<span class="code-keyword">export async function</span> <span class="code-function">getServerSideProps</span>() {
+  <span class="code-keyword">const</span> res = <span class="code-keyword">await fetch</span>(<span class="code-string">"https://api.example.com/data"</span>);
+  <span class="code-keyword">const</span> data = <span class="code-keyword">await res.json</span>();
+
+  <span class="code-keyword">return</span> { props: { data } };
+}
+
+<span class="code-keyword">export default function</span> <span class="code-function">Page</span>({ data }) {
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;div&gt;</span>{data.message}<span class="code-tag">&lt;/div&gt;</span>
+  );
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "What is Server Components in React?",
+        answer: "Server Components allow rendering parts of a React application on the server, reducing bundle size and improving performance.",
+        codeExample: `<span class="code-comment">// Example of a Server Component (Next.js 13+)</span>
+<span class="code-keyword">export default async function</span> <span class="code-function">Page</span>() {
+  <span class="code-keyword">const</span> data = <span class="code-keyword">await fetch</span>(<span class="code-string">'https://api.example.com/data'</span>).then(res => res.json());
+
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;div&gt;</span>{data.message}<span class="code-tag">&lt;/div&gt;</span>
+  );
+}`,
+        category: "reactjs"
+      },
+      {
+        question: "What is JSX in React?",
+        answer: "JSX is a syntax extension for JavaScript that allows you to write HTML-like code in React components. It is transpiled to JavaScript by Babel.",
+        codeExample: `<span class="code-comment">// Example of JSX usage</span>
+<span class="code-keyword">const</span> <span class="code-function">App</span> = () => {
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;h1&gt;</span>Hello, JSX!<span class="code-tag">&lt;/h1&gt;</span>
+  );
+};`,
+        category: "reactjs"
+      },
+      {
+        question: "What is the difference between client-side and server-side rendering?",
+        answer: "Client-side rendering (CSR) renders content in the browser using JavaScript, while server-side rendering (SSR) generates the content on the server and sends the HTML to the browser.",
+        codeExample: `<span class="code-comment">// Next.js supports both CSR and SSR</span>
+<span class="code-comment">// CSR - Regular React Component</span>
+<span class="code-keyword">const</span> <span class="code-function">ClientPage</span> = () => {
+  <span class="code-keyword">return</span> (<span class="code-tag">&lt;p&gt;</span>This is client-side rendered.<span class="code-tag">&lt;/p&gt;</span>);
+};
+
+<span class="code-comment">// SSR - getServerSideProps in Next.js</span>
+<span class="code-keyword">export async function</span> <span class="code-function">getServerSideProps</span>() {
+  <span class="code-keyword">return</span> { props: { data: "Server Data" } };
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "What is React Context?",
+        answer: "React Context provides a way to pass data through the component tree without using props at every level.",
+        codeExample: `<span class="code-comment">// Creating and using a React Context</span>
+<span class="code-keyword">const</span> ThemeContext = <span class="code-function">React.createContext</span>('light');
+
+<span class="code-keyword">const</span> <span class="code-function">App</span> = () => (
+  <span class="code-tag">&lt;ThemeContext.Provider</span> <span class="code-attr">value</span>=<span class="code-string">"dark"</span><span class="code-tag">&gt;</span>
+    <span class="code-tag">&lt;ChildComponent /&gt;</span>
+  <span class="code-tag">&lt;/ThemeContext.Provider&gt;</span>
+);`,
+        category: "reactjs"
+      },
+      {
+        question: "How do you handle routing in Next.js?",
+        answer: "Next.js uses file-based routing where each file in the 'pages' directory corresponds to a route.",
+        codeExample: `<span class="code-comment">// pages/index.js - Home Page</span>
+<span class="code-keyword">export default function</span> <span class="code-function">Home</span>() {
+  <span class="code-keyword">return</span> (<span class="code-tag">&lt;h1&gt;</span>Home Page<span class="code-tag">&lt;/h1&gt;</span>);
+}
+
+<span class="code-comment">// Navigating using 'next/link'</span>
+<span class="code-keyword">import</span> Link <span class="code-keyword">from</span> <span class="code-string">'next/link'</span>;
+
+<span class="code-keyword">const</span> <span class="code-function">Nav</span> = () => (
+  <span class="code-tag">&lt;Link href="/about"&gt;</span>About Page<span class="code-tag">&lt;/Link&gt;</span>
+);`,
+        category: "nextjs"
+      },
+      {
+        question: "What is hydration in Next.js?",
+        answer: "Hydration is the process where client-side JavaScript takes over static HTML generated by the server, making it interactive.",
+        codeExample: `<span class="code-comment">// Example of a Next.js page with hydration</span>
+<span class="code-keyword">export default function</span> <span class="code-function">Page</span>() {
+  <span class="code-keyword">const</span> [count, setCount] = <span class="code-function">React.useState</span>(0);
+  
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;button</span> <span class="code-attr">onClick</span>=<span class="code-function">{() => setCount(count + 1)}</span><span class="code-tag">&gt;</span>
+      Clicked {count} times
+    <span class="code-tag">&lt;/button&gt;</span>
+  );
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "How do you manage global state in React?",
+        answer: "Global state in React can be managed using Context API, Redux, or Zustand for more advanced cases.",
+        codeExample: `<span class="code-comment">// Managing global state with React Context</span>
+<span class="code-keyword">const</span> StateContext = <span class="code-function">React.createContext</span>();
+
+<span class="code-keyword">const</span> <span class="code-function">StateProvider</span> = ({ children }) => {
+  <span class="code-keyword">const</span> [state, setState] = <span class="code-function">React.useState</span>('Global State');
+
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;StateContext.Provider</span> <span class="code-attr">value</span>=<span class="code-function">{{ state, setState }}</span><span class="code-tag">&gt;</span>
+      {children}
+    <span class="code-tag">&lt;/StateContext.Provider&gt;</span>
+  );
+};`,
+        category: "reactjs"
+      },
+      {
+        question: "What is Incremental Static Regeneration (ISR) in Next.js?",
+        answer: "ISR allows you to update static content after deployment by re-generating pages in the background.",
+        codeExample: `<span class="code-comment">// Using ISR with getStaticProps</span>
+<span class="code-keyword">export async function</span> <span class="code-function">getStaticProps</span>() {
+  <span class="code-keyword">const</span> data = <span class="code-keyword">await fetch</span>(<span class="code-string">'https://api.example.com/data'</span>).then(res => res.json());
+
+  <span class="code-keyword">return</span> {
+    props: { data },
+    revalidate: <span class="code-number">60</span> <span class="code-comment">// Regenerate every 60 seconds</span>
+  };
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "What is the difference between useMemo and useCallback in React?",
+        answer: "useMemo is used to memoize values while useCallback memoizes functions to prevent unnecessary re-renders.",
+        codeExample: `<span class="code-comment">// Example of useMemo and useCallback</span>
+<span class="code-keyword">const</span> <span class="code-function">Component</span> = () => {
+  <span class="code-keyword">const</span> memoizedValue = <span class="code-function">useMemo</span>(() => computeExpensiveValue(), []);
+  <span class="code-keyword">const</span> memoizedCallback = <span class="code-function">useCallback</span>(() => doSomething(), []);
+
+  <span class="code-keyword">return</span> (<span class="code-tag">&lt;div&gt;</span>{memoizedValue}<span class="code-tag">&lt;/div&gt;</span>);
+};`,
+        category: "reactjs"
+      },
+      {
+        question: "What is getServerSideProps in Next.js?",
+        answer: "getServerSideProps is a Next.js function that allows you to fetch data on the server side at request time. It is useful for dynamic pages requiring real-time data.",
+        codeExample: `<span class="code-comment">// Example of getServerSideProps usage</span>
+<span class="code-keyword">export async function</span> <span class="code-function">getServerSideProps</span>(context) {
+  <span class="code-keyword">const</span> res = <span class="code-keyword">await fetch</span>(<span class="code-string">'https://api.example.com/data'</span>);
+  <span class="code-keyword">const</span> data = <span class="code-keyword">await</span> res.json();
+
+  <span class="code-keyword">return</span> { props: { data } };
+}
+
+<span class="code-keyword">export default function</span> <span class="code-function">Page</span>({ data }) {
+  <span class="code-keyword">return</span> (<span class="code-tag">&lt;p&gt;</span>{data.message}<span class="code-tag">&lt;/p&gt;</span>);
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "When should you use getStaticProps vs getServerSideProps?",
+        answer: "Use getStaticProps for pages with static content that rarely changes, and getServerSideProps for dynamic content that must be updated on every request.",
+        codeExample: `<span class="code-comment">// getStaticProps example (build-time)</span>
+<span class="code-keyword">export async function</span> <span class="code-function">getStaticProps</span>() {
+  <span class="code-keyword">return</span> { props: { time: Date.now() } };
+}
+
+<span class="code-comment">// getServerSideProps example (request-time)</span>
+<span class="code-keyword">export async function</span> <span class="code-function">getServerSideProps</span>() {
+  <span class="code-keyword">return</span> { props: { time: Date.now() } };
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "What is getStaticPaths in Next.js?",
+        answer: "getStaticPaths is used with getStaticProps to generate dynamic routes at build time. It pre-renders pages based on the provided paths.",
+        codeExample: `<span class="code-comment">// pages/post/[id].js</span>
+<span class="code-keyword">export async function</span> <span class="code-function">getStaticPaths</span>() {
+  <span class="code-keyword">const</span> paths = [{ params: { id: '1' } }, { params: { id: '2' } }];
+  <span class="code-keyword">return</span> { paths, fallback: <span class="code-keyword">false</span> };
+}
+
+<span class="code-keyword">export async function</span> <span class="code-function">getStaticProps</span>({ params }) {
+  <span class="code-keyword">return</span> { props: { id: params.id } };
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "What is fallback in getStaticPaths?",
+        answer: "fallback determines how Next.js handles new dynamic routes not generated at build time. Options are 'false', 'true', or 'blocking'.",
+        codeExample: `<span class="code-comment">// Fallback options</span>
+fallback: <span class="code-keyword">false</span> <span class="code-comment">// 404 for undefined paths</span>
+fallback: <span class="code-keyword">true</span> <span class="code-comment">// Show loading, then generate page</span>
+fallback: <span class="code-keyword">"blocking"</span> <span class="code-comment">// Wait until page is generated</span>`,
+        category: "nextjs"
+      },
+      {
+        question: "What is a React Hook rule that can cause bugs?",
+        answer: "Hooks should always be called at the top level and not inside conditions or loops. Violating this can cause bugs.",
+        codeExample: `<span class="code-comment">// Wrong usage (causes bugs)</span>
+<span class="code-keyword">if</span> (condition) {
+  <span class="code-function">useState</span>(0); <span class="code-comment">// ❌ Invalid hook call</span>
+}
+
+<span class="code-comment">// Correct usage</span>
+<span class="code-keyword">const</span> count = <span class="code-function">useState</span>(0);`,
+        category: "react"
+      },
+      {
+        question: "How does shallow routing work in Next.js?",
+        answer: "Shallow routing updates the URL without running getServerSideProps or getStaticProps again.",
+        codeExample: `<span class="code-comment">// Example of shallow routing</span>
+<span class="code-keyword">import</span> { useRouter } <span class="code-keyword">from</span> <span class="code-string">'next/router'</span>;
+
+<span class="code-keyword">const</span> <span class="code-function">ShallowExample</span> = () => {
+  <span class="code-keyword">const</span> router = <span class="code-function">useRouter</span>();
+  
+  <span class="code-keyword">const</span> updateQuery = () => {
+    router.<span class="code-function">push</span>('/page?name=John', undefined, { shallow: <span class="code-keyword">true</span> });
+  };
+
+  <span class="code-keyword">return</span> (<span class="code-tag">&lt;button onClick={updateQuery}&gt;</span>Update URL<span class="code-tag">&lt;/button&gt;</span>);
+};`,
+        category: "nextjs"
+      },
+      {
+        question: "What is the purpose of middleware in Next.js?",
+        answer: "Middleware in Next.js allows you to run code before a request is completed, useful for tasks like authentication and A/B testing.",
+        codeExample: `<span class="code-comment">// middleware.js (at project root)</span>
+<span class="code-keyword">import</span> { NextResponse } <span class="code-keyword">from</span> <span class="code-string">'next/server'</span>;
+
+<span class="code-keyword">export function</span> <span class="code-function">middleware</span>(req) {
+  <span class="code-keyword">if</span> (!req.cookies.auth) {
+    <span class="code-keyword">return</span> NextResponse.redirect(<span class="code-string">'/login'</span>);
+  }
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "How do you cache API responses in Next.js?",
+        answer: "Use the Cache-Control header in API routes or revalidate in getStaticProps to manage caching.",
+        codeExample: `<span class="code-comment">// Caching in an API route</span>
+<span class="code-keyword">export default function</span> <span class="code-function">handler</span>(req, res) {
+  res.<span class="code-function">setHeader</span>(<span class="code-string">'Cache-Control'</span>, <span class="code-string">'s-maxage=60, stale-while-revalidate'</span>);
+  res.<span class="code-function">json</span>({ message: 'Hello Cache!' });
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "How do you handle 404 pages in Next.js?",
+        answer: "Next.js automatically handles 404 pages, but you can customize them by creating a 'pages/404.js' file.",
+        codeExample: `<span class="code-comment">// pages/404.js</span>
+<span class="code-keyword">export default function</span> <span class="code-function">Custom404</span>() {
+  <span class="code-keyword">return</span> (<span class="code-tag">&lt;h1&gt;</span>Page Not Found<span class="code-tag">&lt;/h1&gt;</span>);
+}`,
+        category: "nextjs"
+      },
+
+      {
+        question: "What is the difference between 'id' and 'class' in HTML?",
+        answer: "'id' is a unique identifier for an element, while 'class' is a reusable identifier for styling multiple elements.",
+        codeExample: `<span class="code-comment">// Example usage of id and class</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">id</span>=<span class="code-string">"unique"</span><span class="code-tag">&gt;</span>Unique Element<span class="code-tag">&lt;/div&gt;</span>
+<span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-string">"reusable"</span><span class="code-tag">&gt;</span>Reusable Element<span class="code-tag">&lt;/div&gt;</span>`,
+        category: "html"
+      },
+      {
+        question: "What is the box model in CSS?",
+        answer: "The CSS box model consists of content, padding, border, and margin. It determines how elements are sized and spaced.",
+        codeExample: `<span class="code-comment">/* Box model example */</span>
+.box {
+  width: <span class="code-number">100px</span>;
+  padding: <span class="code-number">10px</span>;
+  border: <span class="code-number">5px</span> solid black;
+  margin: <span class="code-number">20px</span>;
+}`,
+        category: "css"
+      },
+      {
+        question: "What is event delegation in JavaScript?",
+        answer: "Event delegation involves attaching a single event listener to a parent element to manage events on its child elements.",
+        codeExample: `<span class="code-comment">// Event delegation example</span>
+document.<span class="code-function">addEventListener</span>(<span class="code-string">'click'</span>, (e) => {
+  <span class="code-keyword">if</span> (e.target.matches(<span class="code-string">'.btn'</span>)) {
+    <span class="code-function">console.log</span>(<span class="code-string">'Button clicked!'</span>);
+  }
+});`,
+        category: "javascript"
+      },
+      {
+        question: "What is the difference between '==' and '===' in JavaScript?",
+        answer: "'==' checks for value equality with type coercion, while '===' checks for value and type equality.",
+        codeExample: `<span class="code-comment">// Example comparison</span>
+<span class="code-function">console.log</span>(<span class="code-number">5</span> == <span class="code-string">'5'</span>); <span class="code-comment">// true (type coercion)</span>
+<span class="code-function">console.log</span>(<span class="code-number">5</span> === <span class="code-string">'5'</span>); <span class="code-comment">// false (strict check)</span>`,
+        category: "javascript"
+      },
+      {
+        question: "What are pseudo-classes in CSS?",
+        answer: "Pseudo-classes define a special state of an element, like ':hover', ':focus', and ':nth-child()'.",
+        codeExample: `<span class="code-comment">/* Pseudo-class example */</span>
+button:hover {
+  background-color: <span class="code-string">"blue"</span>;
+}`,
+        category: "css"
+      },
+      {
+        question: "What is the purpose of the HTML5 'data-' attribute?",
+        answer: "The 'data-' attribute is used to store custom data directly in HTML elements for access via JavaScript.",
+        codeExample: `<span class="code-comment">// Example of data-attribute</span>
+<span class="code-tag">&lt;button</span> <span class="code-attr">data-user-id</span>=<span class="code-string">"123"</span><span class="code-tag">&gt;</span>Click Me<span class="code-tag">&lt;/button&gt;</span>
+
+<span class="code-comment">// Accessing with JavaScript</span>
+const btn = document.querySelector(<span class="code-string">'button'</span>);
+<span class="code-function">console.log</span>(btn.dataset.userId);`,
+        category: "html"
+      },
+      {
+        question: "Explain hoisting in JavaScript.",
+        answer: "Hoisting in JavaScript moves variable and function declarations to the top of their scope during compilation.",
+        codeExample: `<span class="code-comment">// Hoisting example</span>
+<span class="code-function">console.log</span>(x); <span class="code-comment">// undefined</span>
+var x = <span class="code-number">5</span>;
+
+<span class="code-comment">// Function hoisting</span>
+<span class="code-function">sayHello</span>();
+<span class="code-keyword">function</span> <span class="code-function">sayHello</span>() {
+  <span class="code-function">console.log</span>(<span class="code-string">'Hello!'</span>);
+}`,
+        category: "javascript"
+      },
+      {
+        question: "What is the difference between 'localStorage' and 'sessionStorage'?",
+        answer: "'localStorage' persists data until manually deleted, while 'sessionStorage' lasts until the browser tab is closed.",
+        codeExample: `<span class="code-comment">// localStorage example</span>
+localStorage.setItem(<span class="code-string">'name'</span>, <span class="code-string">'John'</span>);
+<span class="code-function">console.log</span>(localStorage.getItem(<span class="code-string">'name'</span>));
+
+<span class="code-comment">// sessionStorage example</span>
+sessionStorage.setItem(<span class="code-string">'name'</span>, <span class="code-string">'Doe'</span>);`,
+        category: "javascript"
+      },
+      {
+        question: "What is Flexbox in CSS?",
+        answer: "Flexbox is a CSS layout model that allows easy alignment, distribution, and spacing of elements.",
+        codeExample: `<span class="code-comment">/* Flexbox example */</span>
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}`,
+        category: "css"
+      },
+      {
+        question: "What is the difference between 'null' and 'undefined' in JavaScript?",
+        answer: "'null' represents an intentional absence of value, while 'undefined' means a variable has been declared but not assigned.",
+        codeExample: `<span class="code-comment">// Example</span>
+let a; <span class="code-comment">// undefined</span>
+let b = <span class="code-keyword">null</span>;`,
+        category: "javascript"
+      },
+      {
+        question: "What is the 'z-index' property in CSS?",
+        answer: "The 'z-index' property controls the vertical stacking order of elements on the page.",
+        codeExample: `<span class="code-comment">/* z-index example */</span>
+.box {
+  position: absolute;
+  z-index: 10; <span class="code-comment">/* Higher value appears on top */</span>
+}`,
+        category: "css"
+      },
+      {
+        question: "What is a closure in JavaScript?",
+        answer: "A closure is a function that retains access to its outer scope, even after the outer function has finished executing.",
+        codeExample: `<span class="code-comment">// Closure example</span>
+<span class="code-keyword">function</span> <span class="code-function">outer</span>() {
+  <span class="code-keyword">let</span> count = <span class="code-number">0</span>;
+  <span class="code-keyword">return function</span>() {
+    count++;
+    <span class="code-function">console.log</span>(count);
+  };
+}
+
+const counter = outer();
+counter(); <span class="code-comment">// 1</span>
+counter(); <span class="code-comment">// 2</span>`,
+        category: "javascript"
+      },
+      {
+        question: "What is the difference between 'inline', 'block', and 'inline-block' elements in CSS?",
+        answer: "'inline' takes only necessary space, 'block' takes the full width, and 'inline-block' allows block properties while staying inline.",
+        codeExample: `<span class="code-comment">/* Display properties */</span>
+.inline { display: inline; }
+.block { display: block; }
+.inline-block { display: inline-block; }`,
+        category: "css"
+      },
+      {
+        question: "What will happen if you use an ID multiple times in HTML?",
+        answer: "Using an ID multiple times violates the uniqueness rule, which may cause issues in JavaScript and CSS selectors, as ID should be unique in the document.",
+        codeExample: `<span class="code-comment">// Invalid HTML with duplicate ID</span>
+<span class="code-tag">&lt;div id="unique"&gt;</span>First Element<span class="code-tag">&lt;/div&gt;</span>
+<span class="code-tag">&lt;div id="unique"&gt;</span>Second Element<span class="code-tag">&lt;/div&gt;</span>`,
+        category: "html"
+      },
+      {
+        question: "Can you apply styles to an element with the :before or :after pseudo-elements even if the element doesn't contain any content?",
+        answer: "Yes, pseudo-elements like :before or :after can be styled even if the element doesn't contain content, but they still need to have some display property (like block or inline).",
+        codeExample: `<span class="code-comment">/* :before without content but styled */</span>
+div::before {
+  content: '';
+  display: block;
+  width: 100px;
+  height: 20px;
+  background-color: red;
+}`,
+        category: "css"
+      },
+      {
+        question: "What is the output of this JavaScript code: [1] == true?",
+        answer: "The output is false. JavaScript does not coerce an array to a boolean value when comparing it to a boolean directly.",
+        codeExample: `<span class="code-function">console.log</span>([<span class="code-number">1</span>] == <span class="code-keyword">true</span>); <span class="code-comment">// false</span>`,
+        category: "javascript"
+      },
+      {
+        question: "What will be the result of calling 'NaN === NaN' in JavaScript?",
+        answer: "'NaN' is not equal to itself in JavaScript, so 'NaN === NaN' will return false.",
+        codeExample: `<span class="code-function">console.log</span>(<span class="code-string">'NaN'</span> === <span class="code-string">'NaN'</span>); <span class="code-comment">// false</span>`,
+        category: "javascript"
+      },
+      {
+        question: "How can you select an element by its data attribute in CSS?",
+        answer: "You can select elements with a data attribute using the attribute selector in CSS, like [data-*].",
+        codeExample: `<span class="code-comment">/* CSS Attribute Selector */</span>
+[data-user="123"] {
+  background-color: yellow;
+}`,
+        category: "css"
+      },
+      {
+        question: "What is the role of 'key' prop in React, and what happens if it is not provided?",
+        answer: "The 'key' prop helps React identify which items have changed, are added, or are removed in lists. Without a key, React may not optimize rendering, leading to inefficient updates.",
+        codeExample: `<span class="code-comment">// Without key (inefficient rendering)</span>
+<ul>
+  <li>Item 1</li>
+  <li>Item 2</li>
+</ul>
+<span class="code-comment">// With key (optimized)</span>
+<ul>
+  <li key="1">Item 1</li>
+  <li key="2">Item 2</li>
+</ul>`,
+        category: "reactjs"
+      },
+      {
+        question: "What does the 'dangerouslySetInnerHTML' attribute do in React?",
+        answer: "The 'dangerouslySetInnerHTML' attribute is used to insert raw HTML into a component, but it should be used cautiously to avoid cross-site scripting (XSS) vulnerabilities.",
+        codeExample: `<span class="code-comment">// Example of dangerouslySetInnerHTML</span>
+const content = {__html: '<p>Hello World</p>'};
+<span class="code-keyword">return</span> <span class="code-tag">&lt;div dangerouslySetInnerHTML={content}&gt;</span>&lt;/div&gt;`,
+        category: "reactjs"
+      },
+      {
+        question: "What is the difference between 'static', 'server-side', and 'client-side' rendering in Next.js?",
+        answer: "'Static' rendering is pre-rendering HTML at build time, 'server-side' rendering happens at request time on the server, and 'client-side' rendering happens in the browser after the page is loaded.",
+        codeExample: `<span class="code-comment">// Static Generation in Next.js</span>
+export async function getStaticProps() {
+  return { props: { message: 'Hello' } };
+}
+<span class="code-comment">// Server-side Rendering</span>
+export async function getServerSideProps() {
+  return { props: { message: 'Hello from Server!' } };
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "How does React handle state updates and re-rendering?",
+        answer: "React batches state updates and re-renders components asynchronously for performance optimization. Multiple state changes within a single event will cause only one re-render.",
+        codeExample: `<span class="code-comment">// State update in React</span>
+const [count, setCount] = useState(0);
+const increment = () => {
+  setCount(count + 1); 
+  setCount(count + 2); // React batches this update
+};
+<span class="code-comment">// This results in one render, with count = 2</span>`,
+        category: "reactjs"
+      },
+      {
+        question: "How do you prevent a form from submitting in React?",
+        answer: "You can prevent the default form submission behavior by calling 'e.preventDefault()' within the form's submit event handler.",
+        codeExample: `<span class="code-comment">// Prevent form submission in React</span>
+const handleSubmit = (e) => {
+  e.preventDefault();
+  <span class="code-function">console.log</span>('Form submitted');
+};
+<span class="code-tag">&lt;form onSubmit={handleSubmit}&gt;</span>&lt;/form&gt;`,
+        category: "reactjs"
+      },
+      {
+        question: "What is the use of 'useEffect' hook in React?",
+        answer: "'useEffect' allows you to perform side effects in function components. It can be used for tasks like fetching data or setting up subscriptions.",
+        codeExample: `<span class="code-comment">// useEffect example</span>
+useEffect(() => {
+  <span class="code-function">console.log</span>('Component mounted');
+  return () => {
+    <span class="code-function">console.log</span>('Cleanup on unmount');
+  };
+}, []);`,
+        category: "reactjs"
+      },
+      {
+        question: "What is a higher-order component (HOC) in React?",
+        answer: "A higher-order component is a function that takes a component and returns a new component with additional props or behavior.",
+        codeExample: `<span class="code-comment">// Higher-Order Component example</span>
+const withLoading = (Component) => {
+  return (props) => {
+    if (props.loading) {
+      return <span>Loading...</span>;
+    }
+    return <Component {...props} />;
+  };
+};`,
+        category: "reactjs"
+      },
+      {
+        question: "What is the purpose of 'getServerSideProps' in Next.js?",
+        answer: "'getServerSideProps' is used in Next.js to fetch data server-side before rendering the page on each request.",
+        codeExample: `<span class="code-comment">// Using getServerSideProps in Next.js</span>
+export async function getServerSideProps() {
+  const data = await fetch(<span class="code-string">'https://api.example.com'</span>);
+  return { props: { data } };
+}`,
+        category: "nextjs"
+      },
+      {
+        question: "What is 'Rehydration' in Next.js?",
+        answer: "Rehydration in Next.js refers to the process of taking pre-rendered HTML and making it interactive on the client-side by attaching event listeners and running JavaScript code.",
+        category: "nextjs"
+      },
+      {
+        question: "Explain the difference between 'Inline' and 'Block' elements in HTML.",
+        answer: "'Inline' elements take up only the space they need and do not force a new line, while 'Block' elements take up the full width of their container and force a new line.",
+        codeExample: `<span class="code-comment">// Inline vs Block elements</span>
+<span class="code-tag">&lt;span&gt;</span>Inline Element<span class="code-tag">&lt;/span&gt;</span>
+<span class="code-tag">&lt;div&gt;</span>Block Element<span class="code-tag">&lt;/div&gt;</span>`,
+        category: "html"
+      },
+      {
+        question: "What is the purpose of the 'clear' property in CSS?",
+        answer: "The 'clear' property is used to prevent elements from flowing around a floated element by clearing floats from one or both sides.",
+        codeExample: `<span class="code-comment">/* Clear floats */</span>
+.clearfix {
+  clear: both;
+}`,
+        category: "css"
+      },
+      {
+        question: "How does CSS 'position: absolute;' work in relation to its parent element?",
+        answer: "An element with 'position: absolute;' is positioned relative to its nearest positioned ancestor (non-static). If there is none, it is positioned relative to the initial containing block.",
+        codeExample: `<span class="code-comment">// Position absolute example</span>
+<div style="position: relative;">
+  <div style="position: absolute; top: 10px; left: 10px;">Absolute Positioned</div>
+</div>`,
+        category: "css"
+      },
+      {
+        question: "Can you have multiple 'root' elements in a React app?",
+        answer: "No, React requires only one root DOM element to mount the app, but you can render multiple components into different sections of the DOM if needed.",
+        category: "reactjs"
+      },
+      {
+        question: "What is 'context' in React and why would you use it?",
+        answer: "'Context' in React allows you to pass data through the component tree without having to manually pass props at every level.",
+        codeExample: `<span class="code-comment">// React Context example</span>
+const MyContext = createContext();
+<MyContext.Provider value={/* some value */}>
+  <Component />
+</MyContext.Provider>`,
+        category: "reactjs"
+      },
+
+    ];
+
+
+    // DOM elements
+    const card = document.querySelector('.card');
+    const cardFront = document.querySelector('.card-front .card-content');
+    const cardBack = document.querySelector('.card-back .card-content');
+    const cardFrontHeader = document.querySelector('.card-front .card-header');
+    const cardBackHeader = document.querySelector('.card-back .card-header');
+    const cardBadge = document.querySelector('.card-badge');
+    const newCardBtn = document.getElementById('new-card-btn');
+    const categoryFilter = document.getElementById('category-filter');
+    const progressText = document.querySelector('.progress-text');
+    const progressFill = document.querySelector('.progress-fill');
+
+    // Variables to track state
+    let currentCardIndex = -1;
+    let filteredCards = [...flashcards];
+    let viewedCards = new Set();
+
+    // Initialize
+    updateProgress();
+
+    // Event listeners
+    newCardBtn.addEventListener('click', showNewCard);
+    card.addEventListener('click', flipCard);
+    categoryFilter.addEventListener('change', filterCards);
+
+    function showNewCard() {
+      // Remove flipped class if present
+      card.classList.remove('flipped');
+
+      // Get a random card that hasn't been viewed yet if possible
+      let availableCards = filteredCards.filter((_, index) => !viewedCards.has(index));
+
+      // If all cards have been viewed, reset
+      if (availableCards.length === 0) {
+        viewedCards.clear();
+        availableCards = filteredCards;
+      }
+
+      // Select a random card from available cards
+      const randomIndex = Math.floor(Math.random() * availableCards.length);
+      currentCardIndex = filteredCards.indexOf(availableCards[randomIndex]);
+      viewedCards.add(currentCardIndex);
+
+      // Add opening animation
+      card.classList.add('opening');
+      setTimeout(() => {
+        card.classList.remove('opening');
+      }, 1500);
+
+      // Update card content
+      const currentCard = filteredCards[currentCardIndex];
+      cardFrontHeader.textContent = `${currentCard.category.toUpperCase()} Question`;
+      cardFront.innerHTML = `<p>${currentCard.question}</p>`;
+      cardBackHeader.textContent = 'Answer';
+      cardBack.innerHTML = `
+        <p>${currentCard.answer}</p>
+        <div class="code-example">${currentCard.codeExample}</div>
+      `;
+      cardBadge.textContent = currentCard.category;
+
+      // Update progress
+      updateProgress();
+    }
+
+    function flipCard() {
+      if (currentCardIndex === -1) return; // No card shown yet
+      card.classList.toggle('flipped');
+    }
+
+    function filterCards() {
+      const category = categoryFilter.value;
+
+      // Filter cards based on category
+      if (category === 'all') {
+        filteredCards = [...flashcards];
+      } else {
+        filteredCards = flashcards.filter(card => card.category === category);
+      }
+
+      // Reset viewed cards
+      viewedCards.clear();
+      currentCardIndex = -1;
+      updateProgress();
+
+      // Show first card if available
+      if (filteredCards.length > 0) {
+        showNewCard();
+      } else {
+        cardFront.innerHTML = '<p>No cards found for this category.</p>';
+        cardBack.innerHTML = '<p>Try selecting a different category.</p>';
+      }
+    }
+
+    function updateProgress() {
+      const total = filteredCards.length;
+      const viewed = Math.min(viewedCards.size, total);
+      progressText.textContent = `Progress: ${viewed}/${total}`;
+      progressFill.style.width = total > 0 ? `${(viewed / total) * 100}%` : '0%';
+    }
+  </script>
+</body>
+
+</html>
